@@ -1,16 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using Xamarin.Forms;
 
 namespace W
 {
-    public class Phone
+    public class Phone : INotifyPropertyChanged
     {
+        private string _title;
+        private string _company;
+        private int _price;
+
         public int Id { get; set; }
-        public string Title { get; set; }
-        public string Company { get; set; }
-        public int Price { get; set; }
+        public string Title 
+        { 
+            get { return _title; } 
+            set{
+                _title = value;
+                OnPropertyChanged("Title");
+            } 
+        }
+        public string Company 
+        { 
+            get { return _company; }
+            set
+            {
+                _company = value;
+                OnPropertyChanged("Company");
+            }
+        }
+        public int Price 
+        { 
+            get { return _price; } 
+            set 
+            {
+                _price = value;
+                OnPropertyChanged("Price");
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public void OnPropertyChanged(string val)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(val));
+        }
     }
 
     public class App : Application
@@ -37,6 +72,26 @@ namespace W
                 new Phone {Title="HTC U Ultra", Company="HTC", Price=42000 , Id = 7 },
                 new Phone {Title="iPhone 7", Company="Apple", Price=52000 , Id = 8 },
             };
+
+            var appleTrigger = new DataTrigger(typeof(Label))
+            {
+                Binding = new Binding
+                {
+                    Path = "Company"
+                },
+                Value = "Apple"
+            };
+
+            appleTrigger.Setters.Add(new Setter(){
+                Property = Label.TextColorProperty,
+                Value = Color.Red
+            });
+
+            appleTrigger.Setters.Add(new Setter(){
+                Property = Label.FontAttributesProperty,
+                Value = FontAttributes.Bold
+            });
+
             listView = new ListView
             {
                 HasUnevenRows = true,
@@ -53,6 +108,7 @@ namespace W
                     // привязка к свойству Company
                     Label companyLabel = new Label();
                     companyLabel.SetBinding(Label.TextProperty, "Company");
+                    companyLabel.Triggers.Add(appleTrigger);
 
                     // привязка к свойству Price
                     Label priceLabel = new Label();
@@ -74,7 +130,22 @@ namespace W
 
 
             listView.ItemTapped += ListView_ItemTapped;
+            listView.SeparatorVisibility = SeparatorVisibility.Default;
+            listView.SeparatorColor = Color.DarkViolet;
 
+            var sl =  new StackLayout
+            {
+                BackgroundColor = Color.DarkSalmon,
+
+            };
+
+            sl.Children.Add(new Label
+            {
+                
+                Text = "qqq"
+
+            });
+            listView.Header = sl;
             var btnAdd = new Button
             {
                 Text = " Add ",
@@ -145,7 +216,7 @@ namespace W
             {
                 id = -1;
                 listView.SelectedItem = null;
-                listView.EndRefresh();
+                item.Company += "1";
             }
             else
             {
